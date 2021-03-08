@@ -2,82 +2,11 @@
 import requests
 import json
 import rospy
-from std_msgs.msg import Float64MultiArray, Float64, String
+from std_msgs.msg import Float64MultiArray, String
 
 WEB_SERVER = "https://desolate-taiga-99175.herokuapp.com/get_json"
 REAGENTS_DESCRIPTION = ["ReagentNum", "C", "W", "p", "row", "column"]
 MIXING_DESCRIPTION = ["ReagentNum1", "ReagentNum2", "C", "W", "p", "row", "column", "matrix"]
-
-TEST_WEB_RESPONSE = """
-{
-  "reagents": [
-    {
-      "ReagentName": "Cl",
-      "ReagentNum": "0",
-      "C": "1",
-      "W": "0.035453000000000005",
-      "p": "1",
-      "row": "0",
-      "column": "0"
-    },
-    {
-      "ReagentName": "C2H6O",
-      "ReagentNum": "1",
-      "C": "1",
-      "W": "0.035453000000000005",
-      "p": "1",
-      "row": "0",
-      "column": "1"
-    },
-    {
-      "ReagentName": "H2O",
-      "ReagentNum": "-1",
-      "C": "1",
-      "W": "1",
-      "p": "1",
-      "row": "0",
-      "column": "2"
-    },
-    {
-      "ReagentName": "H2O",
-      "ReagentNum": "-1",
-      "C": "1",
-      "W": "1",
-      "p": "1",
-      "row": "1",
-      "column": "0"
-    }
-  ],
-  "mixing": [
-    {
-      "ReagentName1": "C2H6O",
-      "ReagentNum1": "1",
-      "ReagentName2": "H2O",
-      "ReagentNum2": "-1",
-      "C": "1",
-      "W": "0.035453000000000005",
-      "p": "1",
-      "row": "0",
-      "column": "0"
-    },
-    {
-      "ReagentName1": "C2H6O",
-      "ReagentNum1": "1",
-      "ReagentName2": "H2O",
-      "ReagentNum2": "-1",
-      "C": "1",
-      "W": "",
-      "p": "",
-      "row": "",
-      "column": "0"
-    }
-  ]
-}
-"""
-
-TEST_WEB_RESPONCE_WRONG = """
-{u'mixing': [{u'C': u'321', u'Reagent1Num': 2, u'column': 1, u'Reagent2Num': -1, u'p': u'321', u'ReagentName1': u'Cl', u'W': u'123', u'ReagentName2': u'H2O', u'row': 1, u'matrix': 1}, {u'C': u'123', u'Reagent1Num': 1, u'column': 1, u'Reagent2Num': -1, u'p': u'321', u'ReagentName1': u'Li', u'W': u'321', u'ReagentName2': u'H2O', u'row': 2, u'matrix': 1}], u'reagents': [{u'C': u'12', u'ReagentName': u'H20', u'column': 0, u'p': u'213', u'ReagentNum': 0, u'W': u'32', u'row': 0}, {u'C': u'1952.494', u'ReagentName': u'Li', u'column': 1, u'p': u'123', u'ReagentNum': 1, u'W': u'11.0181', u'row': 0}, {u'C': u'', u'ReagentName': u'Li', u'column': 2, u'p': u'1', u'ReagentNum': 1, u'W': u'', u'row': 0}, {u'C': u'', u'ReagentName': u'Cl', u'column': 0, u'p': u'1', u'ReagentNum': 2, u'W': u'', u'row': 1}, {u'C': u'', u'ReagentName': u'Cl', u'column': 1, u'p': u'1', u'ReagentNum': 2, u'W': u'', u'row': 2}, {u'C': u'', u'ReagentName': u'Li', u'column': 2, u'p': u'1', u'ReagentNum': 1, u'W': u'', u'row': 2}]}
-"""
 
 
 def talker():
@@ -86,7 +15,11 @@ def talker():
     reagents_description_pub = rospy.Publisher('reagents_description', String, queue_size=10)
     mixing_description_pub = rospy.Publisher('mixing_description', String, queue_size=10)
     rospy.init_node('web_to_manipulator', anonymous=True)
+    rate = rospy.Rate(100)
     while not rospy.is_shutdown():
+        reagents_description_pub.publish(str(REAGENTS_DESCRIPTION))
+        mixing_description_pub.publish(str(MIXING_DESCRIPTION))
+
         try:
             response = requests.get(WEB_SERVER, timeout=10)
         except KeyboardInterrupt:
@@ -134,8 +67,7 @@ def talker():
                 "Web server is sending incorrect fields contains for mixing\nThis node needs \"\" or any real number as a string")
             continue
 
-        reagents_description_pub.publish(str(REAGENTS_DESCRIPTION))
-        mixing_description_pub.publish(str(MIXING_DESCRIPTION))
+        rate.sleep()
 
 
 if __name__ == '__main__':
