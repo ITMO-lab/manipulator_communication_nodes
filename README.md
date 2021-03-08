@@ -4,6 +4,8 @@
 
 This is **ROS Node** for organizing message transfer (type is std_msgs/String) via **UDP** protocol between **two or more roscore** devices inside one **local network**.
 
+Also, this package implements **broadcasting** information from **web server into ROS's topics**.
+
 
 
 #### Installation:
