@@ -9,7 +9,7 @@ REAGENTS_DESCRIPTION = ["ReagentNum", "C", "W", "p", "row", "column"]
 MIXING_DESCRIPTION = ["ReagentNum1", "ReagentNum2", "C", "W", "p", "row", "column", "matrix"]
 
 
-def talker():
+def web_to_manipulator():
     reagents_pub = rospy.Publisher('reagents', Float64MultiArray, queue_size=10)
     mixing_pub = rospy.Publisher('mixing', Float64MultiArray, queue_size=10)
     reagents_description_pub = rospy.Publisher('reagents_description', String, queue_size=10)
@@ -72,6 +72,6 @@ def talker():
 
 if __name__ == '__main__':
     try:
-        talker()
+        web_to_manipulator()
     except rospy.ROSInterruptException:
         pass

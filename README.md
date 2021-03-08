@@ -10,7 +10,7 @@ chmod +x scripts/*.py
 
 rosrun manipulator_communication_nodes web_to_manipulator.py
 
-rosparam set /communication_between_manipulators/remote_manipulator_ip {REMOTE IP}
+rosparam set /communication_between_manipulators/remote_manipulator_ip {REMOTE_MANIPULATOR_IP}
 
 rosrun manipulator_communication_nodes manipulator_to_manipulator.py
 
