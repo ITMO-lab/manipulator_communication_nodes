@@ -2,26 +2,44 @@
 import requests
 import json
 import rospy
-from std_msgs.msg import Float64MultiArray, String
+from std_msgs.msg import Float64MultiArray, String, Int32MultiArray
 
+ROSTOPIC_PREFIX = ""
 WEB_SERVER = "https://desolate-taiga-99175.herokuapp.com/get_json"
 REAGENTS_DESCRIPTION = ["ReagentNum", "C", "W", "p", "row", "column"]
 MIXING_DESCRIPTION = ["ReagentNum1", "ReagentNum2", "C", "W", "p", "row", "column", "matrix"]
+global MANIPULATORS_STATES
+MANIPULATORS_STATES = []
+
+
+def set_manipulators_states(data):
+    global MANIPULATORS_STATES
+    MANIPULATORS_STATES = data.data
+
+
+def get_manipulators_states():
+    global MANIPULATORS_STATES
+    if len(MANIPULATORS_STATES) == 0:
+        return ""
+    return "?states=" + ','.join(map(str, MANIPULATORS_STATES))
 
 
 def web_to_manipulator():
-    reagents_pub = rospy.Publisher('reagents', Float64MultiArray, queue_size=10)
-    mixing_pub = rospy.Publisher('mixing', Float64MultiArray, queue_size=10)
-    reagents_description_pub = rospy.Publisher('reagents_description', String, queue_size=10)
-    mixing_description_pub = rospy.Publisher('mixing_description', String, queue_size=10)
-    rospy.init_node('web_to_manipulator', anonymous=True)
+    global MANIPULATORS_STATES
+    manipulators_status_sub = rospy.Subscriber(ROSTOPIC_PREFIX + 'manipulators_status', Int32MultiArray,
+                                               set_manipulators_states)
+    reagents_pub = rospy.Publisher(ROSTOPIC_PREFIX + 'reagents', Float64MultiArray, queue_size=10)
+    mixing_pub = rospy.Publisher(ROSTOPIC_PREFIX + 'mixing', Float64MultiArray, queue_size=10)
+    reagents_description_pub = rospy.Publisher(ROSTOPIC_PREFIX + 'reagents_description', String, queue_size=10)
+    mixing_description_pub = rospy.Publisher(ROSTOPIC_PREFIX + 'mixing_description', String, queue_size=10)
+    rospy.init_node(ROSTOPIC_PREFIX + 'web_to_manipulator', anonymous=True)
     rate = rospy.Rate(100)
     while not rospy.is_shutdown():
         reagents_description_pub.publish(str(REAGENTS_DESCRIPTION))
         mixing_description_pub.publish(str(MIXING_DESCRIPTION))
 
         try:
-            response = requests.get(WEB_SERVER, timeout=10)
+            response = requests.get(WEB_SERVER + get_manipulators_states(), timeout=10)
         except KeyboardInterrupt:
             break
         except requests.Timeout:
