@@ -37,6 +37,8 @@ def web_to_manipulator():
             rospy.logerr("Web server is sending incorrect or broken json")
             continue
         rospy.logdebug(str(parsed_data))
+        if len(parsed_data) == 0:
+            continue
 
         reagents = Float64MultiArray()
         try:
